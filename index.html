@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Futuristic Girl - Portfolio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- ======= HERO / HOME ======= -->
+    <!-- Canvas animation is confined to this section only -->
+    <section id="home" class="hero-section">
+        <canvas id="animation-canvas"></canvas>
+         <div class="hero-content">
+        <h1 class="welcome">WELCOME</h1>
+        <h1 id="hero-title">Hello, I'm</h1>
+        <h2 id="hero-subtitle">Sanjeevni Kumari</h2>
+        <p id="hero-desc">Full Stack Developer</p>
+    </div>
+        <div id="scroll-spacer"></div>
+    </section>
+
+    <!-- ======= NORMAL CONTENT SECTIONS ======= -->
+    <!-- These have solid backgrounds and scroll normally -->
+    <section id="about" class="content-section">
+        <h2>About</h2>
+    </section>
+
+    <section id="education" class="content-section">
+        <h2>Education</h2>
+    </section>
+
+    <section id="skills" class="content-section">
+        <h2>Skills</h2>
+    </section>
+
+    <section id="projects" class="content-section">
+        <h2>Projects</h2>
+    </section>
+
+    <section id="contact" class="content-section">
+        <h2>Contact</h2>
+    </section>
+
+    <!-- Loader Overlay -->
+    <div id="loader">
+        <div class="loader-content">
+            <h1>LOADING</h1>
+            <div class="progress-bar-container">
+                <div id="progress-bar"></div>
+            </div>
+            <div id="progress-text">0%</div>
+        </div>
+    </div>
+
+    <!-- Navbar (last in DOM for paint order) -->
+    <nav id="navbar">
+        <div class="nav-container">
+            <a href="#home" class="nav-logo">PORTFOLIO</a>
+
+            <ul class="nav-links" id="nav-links">
+                <li><a href="#home"      class="nav-link active">Home</a></li>
+                <li><a href="#about"     class="nav-link">About</a></li>
+                <li><a href="#education" class="nav-link">Education</a></li>
+                <li><a href="#skills"    class="nav-link">Skills</a></li>
+                <li><a href="#projects"  class="nav-link">Projects</a></li>
+                <li><a href="#contact"   class="nav-link">Contact</a></li>
+            </ul>
+
+            <button class="hamburger" id="hamburger" aria-label="Toggle navigation">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Scripts -->
+    <script src="app.js"></script>
+    <script src="nav.js"></script>
+</body>
+</html>
