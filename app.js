@@ -307,3 +307,267 @@ window.addEventListener("scroll", () => {
     }
 
 });
+
+/* =====================================================
+   EDUCATION HORIZONTAL TIMELINE SCROLL CONTROLLER
+   ===================================================== */
+const eduSection = document.getElementById("education");
+const eduTrack = document.getElementById("edu-timeline-track");
+const eduProgressFill = document.getElementById("edu-progress-fill");
+
+function updateEducationTimeline() {
+    if (!eduSection || !eduTrack || window.innerWidth <= 768) return;
+
+    const rect = eduSection.getBoundingClientRect();
+    const sectionHeight = eduSection.offsetHeight;
+    const viewportHeight = window.innerHeight;
+
+    // Calculate scroll distance within the education section
+    const totalScrollable = sectionHeight - viewportHeight;
+    const currentScroll = -rect.top;
+
+    if (currentScroll >= 0 && currentScroll <= totalScrollable) {
+        const progress = currentScroll / totalScrollable;
+
+        // Calculate maximum horizontal scroll distance
+        const maxTranslate = eduTrack.scrollWidth - window.innerWidth + (window.innerWidth * 0.2);
+        const translateX = progress * maxTranslate;
+
+        eduTrack.style.transform = `translateX(-${translateX}px)`;
+
+        if (eduProgressFill) {
+            eduProgressFill.style.width = `${Math.min(100, Math.max(0, progress * 100))}%`;
+        }
+    } else if (currentScroll < 0) {
+        eduTrack.style.transform = `translateX(0px)`;
+        if (eduProgressFill) eduProgressFill.style.width = `0%`;
+    } else {
+        const maxTranslate = eduTrack.scrollWidth - window.innerWidth + (window.innerWidth * 0.2);
+        eduTrack.style.transform = `translateX(-${maxTranslate}px)`;
+        if (eduProgressFill) eduProgressFill.style.width = `100%`;
+    }
+}
+
+window.addEventListener("scroll", updateEducationTimeline, { passive: true });
+window.addEventListener("resize", updateEducationTimeline);
+
+/* =====================================================
+   3D STACKED SKILLS DECK CONTROLLER
+   ===================================================== */
+(function initSkillsDeck() {
+    const deck = document.getElementById("skills-deck");
+    const prevBtn = document.getElementById("deck-prev-btn");
+    const nextBtn = document.getElementById("deck-next-btn");
+    const dotsContainer = document.getElementById("deck-dots");
+
+    if (!deck) return;
+
+    const cards = Array.from(deck.querySelectorAll(".skill-stack-card"));
+    let cardOrder = cards.map((_, i) => i); // [0, 1, 2, 3, 4]
+
+    function applyPositions() {
+        cards.forEach((card, originalIndex) => {
+            const currentPos = cardOrder.indexOf(originalIndex);
+
+            card.classList.remove("pos-0", "pos-1", "pos-2", "pos-3", "pos-4", "swiping-left", "swiping-right");
+            card.classList.add(`pos-${currentPos}`);
+        });
+
+        // Update active pagination dot
+        if (dotsContainer) {
+            const activeCardIndex = cardOrder[0];
+            const dots = dotsContainer.querySelectorAll(".dot");
+            dots.forEach((dot, idx) => {
+                if (idx === activeCardIndex) {
+                    dot.classList.add("active");
+                } else {
+                    dot.classList.remove("active");
+                }
+            });
+        }
+    }
+
+    function rotateNext() {
+        const topCardIndex = cardOrder[0];
+        const topCard = cards[topCardIndex];
+
+        topCard.classList.add("swiping-right");
+
+        setTimeout(() => {
+            const first = cardOrder.shift();
+            cardOrder.push(first);
+            applyPositions();
+        }, 220);
+    }
+
+    function rotatePrev() {
+        const last = cardOrder.pop();
+        cardOrder.unshift(last);
+        applyPositions();
+    }
+
+    // Button Listeners
+    if (nextBtn) nextBtn.addEventListener("click", rotateNext);
+    if (prevBtn) prevBtn.addEventListener("click", rotatePrev);
+
+    // Dot click listeners
+    if (dotsContainer) {
+        dotsContainer.addEventListener("click", (e) => {
+            const dot = e.target.closest(".dot");
+            if (!dot) return;
+            const targetIdx = parseInt(dot.getAttribute("data-dot"));
+            const currentPos = cardOrder.indexOf(targetIdx);
+
+            if (currentPos > 0) {
+                for (let i = 0; i < currentPos; i++) {
+                    const first = cardOrder.shift();
+                    cardOrder.push(first);
+                }
+                applyPositions();
+            }
+        });
+    }
+
+    // Click on stacked card behind to bring to front
+    cards.forEach((card, originalIdx) => {
+        card.addEventListener("click", () => {
+            const currentPos = cardOrder.indexOf(originalIdx);
+            if (currentPos > 0) {
+                for (let i = 0; i < currentPos; i++) {
+                    const first = cardOrder.shift();
+                    cardOrder.push(first);
+                }
+                applyPositions();
+            }
+        });
+    });
+
+    // Touch & Mouse Drag / Swipe Handling on Active Front Card
+    let isDragging = false;
+    let startX = 0;
+    let currentX = 0;
+
+    function handleStart(e) {
+        if (!e.target.closest(".pos-0")) return;
+        isDragging = true;
+        startX = e.type.includes("touch") ? e.touches[0].clientX : e.clientX;
+        currentX = startX;
+    }
+
+    function handleMove(e) {
+        if (!isDragging) return;
+        const x = e.type.includes("touch") ? e.touches[0].clientX : e.clientX;
+        const deltaX = x - startX;
+        currentX = x;
+
+        const activeCard = cards[cardOrder[0]];
+        if (activeCard && Math.abs(deltaX) > 10) {
+            const rotate = deltaX * 0.05;
+            activeCard.style.transform = `translate3d(${deltaX}px, 0, 0) rotate(${rotate}deg) scale(1)`;
+        }
+    }
+
+    function handleEnd() {
+        if (!isDragging) return;
+        isDragging = false;
+        const deltaX = currentX - startX;
+        const activeCard = cards[cardOrder[0]];
+
+        if (activeCard) {
+            activeCard.style.transform = "";
+        }
+
+        if (Math.abs(deltaX) > 50) {
+            rotateNext();
+        }
+    }
+
+    deck.addEventListener("mousedown", handleStart);
+    deck.addEventListener("mousemove", handleMove);
+    window.addEventListener("mouseup", handleEnd);
+
+    deck.addEventListener("touchstart", handleStart, { passive: true });
+    deck.addEventListener("touchmove", handleMove, { passive: true });
+    deck.addEventListener("touchend", handleEnd);
+
+    // Initialize initial positions
+    applyPositions();
+})();
+
+/* =====================================================
+   PROJECTS CATEGORY FILTER CONTROLLER
+   ===================================================== */
+(function initProjectsFilter() {
+    const filterBar = document.getElementById("projects-filter-bar");
+    const grid = document.getElementById("projects-grid");
+
+    if (!filterBar || !grid) return;
+
+    const filterBtns = filterBar.querySelectorAll(".filter-btn");
+    const cards = grid.querySelectorAll(".project-card");
+
+    filterBtns.forEach(btn => {
+        btn.addEventListener("click", () => {
+            filterBtns.forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+
+            const filterValue = btn.getAttribute("data-filter");
+
+            cards.forEach(card => {
+                const categories = card.getAttribute("data-category") || "";
+
+                if (filterValue === "all" || categories.includes(filterValue)) {
+                    card.classList.remove("hide");
+                } else {
+                    card.classList.add("hide");
+                }
+            });
+        });
+    });
+})();
+
+/* =====================================================
+   CONTACT FORM & UTILITY CONTROLLER
+   ===================================================== */
+(function initContactController() {
+    const contactForm = document.getElementById("contact-form");
+    const toast = document.getElementById("toast-notification");
+    const copyBtn = document.getElementById("copy-email-btn");
+    const emailText = document.getElementById("email-text");
+
+    // Copy Email to Clipboard
+    if (copyBtn && emailText) {
+        copyBtn.addEventListener("click", () => {
+            const textToCopy = emailText.innerText.trim();
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const originalText = copyBtn.innerText;
+                copyBtn.innerText = "✓ Copied!";
+                copyBtn.style.borderColor = "#00ffcc";
+                copyBtn.style.color = "#00ffcc";
+                setTimeout(() => {
+                    copyBtn.innerText = originalText;
+                }, 2500);
+            }).catch(err => {
+                console.error("Failed to copy text: ", err);
+            });
+        });
+    }
+
+    // Form Submit Handler
+    if (contactForm && toast) {
+        contactForm.addEventListener("submit", (e) => {
+            e.preventDefault();
+
+            // Show Toast
+            toast.classList.add("show");
+
+            // Reset Form
+            contactForm.reset();
+
+            // Hide Toast after 4 seconds
+            setTimeout(() => {
+                toast.classList.remove("show");
+            }, 4000);
+        });
+    }
+})();
